@@ -66,7 +66,8 @@ export default class Graph {
     }
 
     explore(start, visisted = new Map(), clock = 0) {
-        if (!this.#nodes.has(start)) {
+        console.log(clock)
+;        if (!this.#nodes.has(start)) {
             throw new Error("GraphNode start does not exist in Graph");
         }
         const neighbors = this.#adjacencyStore.get(start);
@@ -76,7 +77,7 @@ export default class Graph {
         if (neighbors) {
             for (const edge of neighbors) {
                 let next = start ==  edge.beginTerminal ? edge.endTerminal: edge.beginTerminal;
-                if (!visisted.has(next)) this.explore(next, visisted, clock++);
+                if (!visisted.has(next)) this.explore(next, visisted, prePost[0] + 1);
             }
         }
         prePost.push(clock++);
