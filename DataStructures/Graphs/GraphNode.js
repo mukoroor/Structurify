@@ -1,8 +1,8 @@
-import Node from "../Node";
+import Node from "../Node.js";
 
 export default class GraphNode extends Node {
 
-    constructor() {
-        super();
+    constructor(data) {
+        super(data);
     }
 }
