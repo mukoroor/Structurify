@@ -6,8 +6,9 @@ export default class Edge {
     #endTerminal
     //undirected == 0; directed = 1;
     #edgeMode
+    #weight
 
-    constructor(begin, end, options = {directed: 0, weight: 0}) {
+    constructor(begin, end, options = {directed: 0, weight: undefined}) {
         if (!begin instanceof GraphNode ) {
             throw new TypeError("invalid begin Node");
         } else if (!end instanceof GraphNode) {
@@ -19,6 +20,14 @@ export default class Edge {
         this.#beginTerminal = begin;
         this.#endTerminal = end;
         this.#edgeMode = options.directed;
+    }
+
+    static reverseEdge(edge) {
+        return new Edge(edge.endTerminal, edge.beginTerminal, {directed: edge.edgeMode, weight: edge.weight});
+    }
+
+    get weight() {
+        return this.#weight || 1;
     }
 
     get edgeMode() {

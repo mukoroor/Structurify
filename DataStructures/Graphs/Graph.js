@@ -2,13 +2,13 @@ import GraphNode from "./GraphNode.js";
 import Edge from "./Edge.js";
 
 export default class Graph {
-    #nodes
-    #edges
+    #nodes = new Set();
+    #edges = new Map();
+    #degreeStore = new Map();
     #adjacencyStore
     // list|map == 0, matrix == 1
     #adjacencyMode
     #characteristics
-
     /**
      * 
      * @param {*} adjacencyMode 
@@ -17,8 +17,6 @@ export default class Graph {
      */
     constructor(adjacencyMode = 0, directed = 0, weighted = 0) {
         this.#characteristics = {directed, weighted}
-        this.#nodes = new Set();
-        this.#edges = new Map();
         if (adjacencyMode) {
             //Edge[][]
             this.#adjacencyStore = Array.from({length: 10}, () => Array(10));
@@ -42,17 +40,28 @@ export default class Graph {
      * @param {*} end 
      * @param {*} weight 
      */
-    addEdge(begin, end, weight = 0) {
+    addEdge(begin, end, weight = undefined) {
         const e = new Edge(begin, end, {...this.#characteristics, weight});
         if (this.#adjacencyMode) {
 
         } else {
-            if (this.#adjacencyStore.has(begin)) this.#adjacencyStore.get(begin).push(e);
-            else this.#adjacencyStore.set(begin, [e]);
+            if (this.#adjacencyStore.has(begin)) {
+                this.#adjacencyStore.get(begin).push(e);
+            } else {
+                this.#adjacencyStore.set(begin, [e]);
+            }
+            // this.#degreeStore.set(end, this..in++;
 
             if (!this.#characteristics.directed) {
-                if (this.#adjacencyStore.has(end)) this.#adjacencyStore.get(end).push(e);
-                else this.#adjacencyStore.set(end, [e]);
+                const reversed = Edge.reverseEdge(e);
+                if (this.#adjacencyStore.has(end)) {
+                    this.#adjacencyStore.get(end).push(reversed);
+                    // this.#degreeStore.get(begin).out++;
+                    // this.#degreeStore.get(end).out++;
+                } else {
+                    // this.#degreeStore.set(end, {in: 0, out: 1});
+                    this.#adjacencyStore.set(end, [reversed]);
+                }
             }
         }
     }
@@ -65,22 +74,21 @@ export default class Graph {
         this.#adjacencyStore = [];
     }
 
-    explore(start, visisted = new Map(), clock = 0) {
-        console.log(clock)
+    depthFirstSearch(start, visited = new Set(), stack = [], dist = 0) {
 ;        if (!this.#nodes.has(start)) {
             throw new Error("GraphNode start does not exist in Graph");
         }
-        const neighbors = this.#adjacencyStore.get(start);
-        const prePost = [clock++];
-        visisted.set(start, prePost);
 
-        if (neighbors) {
+        const neighbors = this.#adjacencyStore.get(start);
+        visited.add(start);
+        stack.push([start, dist]);
+
+        if (neighbors) {    
             for (const edge of neighbors) {
-                let next = start ==  edge.beginTerminal ? edge.endTerminal: edge.beginTerminal;
-                if (!visisted.has(next)) this.explore(next, visisted, prePost[0] + 1);
+                if (!visited.has(next))  this.depthFirstSearch(edge.endTerminal, visited, stack, dist + edge.weight);
             }
         }
-        prePost.push(clock++);
+        return stack;
     }
 
     breadthFirstSearch(start) {
@@ -88,29 +96,51 @@ export default class Graph {
             throw new Error("GraphNode start does not exist in Graph");
         }
 
-        const queue = [start];
-        const visisted = new Set();
+        const queue = [start, 0];
+        const visited = new Set();
+        const stack = [];
 
         while (queue.length != 0) {
             const currNode = queue.shift();
-            visisted.add(currNode);
+            stack.push(currNode);
+            visited.add(currNode[0]);
             const neighbors = this.#adjacencyStore.get(currNode);
 
             if (neighbors) {
                 for (const edge of neighbors) {
-                    let next = currNode ==  edge.beginTerminal ? edge.endTerminal: edge.beginTerminal;
-                    if (!visisted.has(next)) queue.push(next);
+                    if (!visited.has(edge.endTerminal)) queue.push([edge.endTerminal, currNode[1] + edge.weight]);
                 }
             }
         }
+        return stack;
     }
 
-    depthFirstSearch(start, visited = new Map()) {
-        this.explore(start, visited);
-
-        for (const node of this.#nodes) {
-            if (!visited.has(node)) this.explore(node, visited);
+    topoLogicalSort(source) {
+        function explore(start, visited, stack, clock = 1) {
+            if (!this.#nodes.has(start)) {
+                throw new Error("GraphNode start does not exist in Graph");
+            }
+            const neighbors = this.#adjacencyStore.get(start);
+            const prePost = [clock++];
+            visited.add(start);
+            stack.push({node: start, prePost});
+    
+            if (neighbors) {
+                for (const edge of neighbors) {
+                    if (!visited.has(next)) clock = this.explore(next, visited, stack, clock);
+                }
+            }
+            prePost.push(clock++);
+            return clock;
         }
-        console.log(visited);
+
+        const visited = new Set();
+        const stack = [];
+        let clock = explore(source, visited, stack);
+        
+        for (const node of this.#nodes) {
+            if (!visited.has(node)) clock = explore(node, visited, stack, clock++);
+        }
+        return stack;
     }
 }
