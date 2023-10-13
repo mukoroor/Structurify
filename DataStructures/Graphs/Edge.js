@@ -19,11 +19,11 @@ export default class Edge {
         //implement type check
         this.#beginTerminal = begin;
         this.#endTerminal = end;
-        this.#edgeMode = options.directed;
+        this.#edgeMode = 1;
     }
 
-    static reverseEdge(edge) {
-        return new Edge(edge.endTerminal, edge.beginTerminal, {directed: edge.edgeMode, weight: edge.weight});
+    reverse() {
+        return new Edge(this.#endTerminal, this.#beginTerminal, {directed: this.#edgeMode, weight: this.#weight});
     }
 
     get weight() {

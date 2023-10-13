@@ -3,7 +3,7 @@ import Edge from "./Edge.js";
 
 export default class Graph {
     #nodes = new Set();
-    #edges = new Map();
+    #edges = new Set();
     #degreeStore = new Map();
     #adjacencyStore
     // list|map == 0, matrix == 1
@@ -15,8 +15,9 @@ export default class Graph {
      * @param {*} directed 
      * @param {*} weighted 
      */
-    constructor(adjacencyMode = 0, directed = 0, weighted = 0) {
+    constructor(adjacencyMode = 0, directed = 1, weighted = 0) {
         this.#characteristics = {directed, weighted}
+        // Object.freeze(this.#characteristics);
         if (adjacencyMode) {
             //Edge[][]
             this.#adjacencyStore = Array.from({length: 10}, () => Array(10));
@@ -33,6 +34,14 @@ export default class Graph {
     addNode(newNode) {
         if (newNode instanceof GraphNode) this.#nodes.add(newNode);
     }
+
+    removeNode(node) {
+        if (node instanceof GraphNode) {
+            this.#nodes.delete(node);
+            this.#degreeStore.delete(node);
+            this.#adjacencyStore.delete(node);
+        }
+    }
     
     /**
      * 
@@ -42,6 +51,7 @@ export default class Graph {
      */
     addEdge(begin, end, weight = undefined) {
         const e = new Edge(begin, end, {...this.#characteristics, weight});
+        this.#edges.add(e);
         if (this.#adjacencyMode) {
 
         } else {
@@ -50,10 +60,10 @@ export default class Graph {
             } else {
                 this.#adjacencyStore.set(begin, [e]);
             }
-            // this.#degreeStore.set(end, this..in++;
+            this.#degreeStore.set(end, this.#degreeStore.has(end) ? (this.#degreeStore.get(end) || 0) + 1 : 1);
 
             if (!this.#characteristics.directed) {
-                const reversed = Edge.reverseEdge(e);
+                const reversed = e.reverse();
                 if (this.#adjacencyStore.has(end)) {
                     this.#adjacencyStore.get(end).push(reversed);
                     // this.#degreeStore.get(begin).out++;
@@ -62,8 +72,24 @@ export default class Graph {
                     // this.#degreeStore.set(end, {in: 0, out: 1});
                     this.#adjacencyStore.set(end, [reversed]);
                 }
+                this.#degreeStore.set(begin, this.#degreeStore.has(begin) ? (this.#degreeStore.get(begin) || 0) + 1 : 1);
             }
         }
+    }
+
+    reverse() {
+        const reversedGraph = new Graph();
+        for (const node of this.#nodes) {
+            reversedGraph.addNode(node);
+        }
+        for (const edge of this.#edges) {
+            reversedGraph.addEdge(edge.endTerminal, edge.beginTerminal, edge.weight);
+        }
+        return reversedGraph;
+    }
+
+    get nodes() {
+        return this.#nodes;
     }
 
     /**
@@ -144,5 +170,34 @@ export default class Graph {
             if (!visited.has(node)) clock = this.explore(node, visited, stack, clock++);
         }
         return stack;
+    }
+
+    stronglyConnnectComponents() {
+        let source;
+        let components = [];
+        for (const node of this.#nodes) {
+            if (!this.#degreeStore.has(node)) {
+                source = node;
+                break;
+            }
+        }
+
+        if (source) {
+            const reversedGraph = this.reverse();
+            let topSort = reversedGraph.topoLogicalSort(source).sort((a, b) => b.prePost[1] - a.prePost[1])
+            let connnected = new Set();
+            let visited = new Set();
+            while (sort.length != 0) {
+                let cyc = this.depthFirstSearch(sort.shift().node, visited);
+                cyc.forEach(e => {
+                    connnected.add(e[0]);
+                });
+                topSort = topSort.filter(e => !connnected.has(e.node));
+                components.push(connnected)
+                connnected = new Set();
+            }
+        } else {
+        }
+        return components;
     }
 }
