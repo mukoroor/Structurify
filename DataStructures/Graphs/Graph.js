@@ -85,7 +85,7 @@ export default class Graph {
 
         if (neighbors) {    
             for (const edge of neighbors) {
-                if (!visited.has(next))  this.depthFirstSearch(edge.endTerminal, visited, stack, dist + edge.weight);
+                if (!visited.has(edge.endTerminal))  this.depthFirstSearch(edge.endTerminal, visited, stack, dist + edge.weight);
             }
         }
         return stack;
@@ -96,50 +96,52 @@ export default class Graph {
             throw new Error("GraphNode start does not exist in Graph");
         }
 
-        const queue = [start, 0];
-        const visited = new Set();
+        const queue = [[start, 0]];
+        const visited = new Set([start]);
         const stack = [];
 
-        while (queue.length != 0) {
+        while (stack.length  != this.#nodes.size && queue.length != 0) {
             const currNode = queue.shift();
             stack.push(currNode);
-            visited.add(currNode[0]);
-            const neighbors = this.#adjacencyStore.get(currNode);
+            const neighbors = this.#adjacencyStore.get(currNode[0]);
 
             if (neighbors) {
                 for (const edge of neighbors) {
-                    if (!visited.has(edge.endTerminal)) queue.push([edge.endTerminal, currNode[1] + edge.weight]);
+                    if (!visited.has(edge.endTerminal)) {
+                        visited.add(edge.endTerminal);
+                        queue.push([edge.endTerminal, currNode[1] + edge.weight]);
+                    }
                 }
             }
         }
         return stack;
     }
 
-    topoLogicalSort(source) {
-        function explore(start, visited, stack, clock = 1) {
-            if (!this.#nodes.has(start)) {
-                throw new Error("GraphNode start does not exist in Graph");
-            }
-            const neighbors = this.#adjacencyStore.get(start);
-            const prePost = [clock++];
-            visited.add(start);
-            stack.push({node: start, prePost});
-    
-            if (neighbors) {
-                for (const edge of neighbors) {
-                    if (!visited.has(next)) clock = this.explore(next, visited, stack, clock);
-                }
-            }
-            prePost.push(clock++);
-            return clock;
+    explore(start, visited, stack, clock = 1) {
+        if (!this.#nodes.has(start)) {
+            throw new Error("GraphNode start does not exist in Graph");
         }
+        const neighbors = this.#adjacencyStore.get(start);
+        const prePost = [clock++];
+        visited.add(start);
+        stack.push({node: start, prePost});
 
+        if (neighbors) {
+            for (const edge of neighbors) {
+                if (!visited.has(edge.endTerminal)) clock = this.explore(edge.endTerminal, visited, stack, clock);
+            }
+        }
+        prePost.push(clock++);
+        return clock;
+    }
+
+    topoLogicalSort(source) {
         const visited = new Set();
         const stack = [];
-        let clock = explore(source, visited, stack);
+        let clock = this.explore(source, visited, stack);
         
         for (const node of this.#nodes) {
-            if (!visited.has(node)) clock = explore(node, visited, stack, clock++);
+            if (!visited.has(node)) clock = this.explore(node, visited, stack, clock++);
         }
         return stack;
     }

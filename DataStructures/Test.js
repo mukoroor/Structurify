@@ -19,4 +19,6 @@ e.forEach(ed => {
     gr.addEdge(a[begin], a[end]);
 })
 
-gr.depthFirstSearch(a[0]);
+console.log(gr.depthFirstSearch(a[0]));
+console.log(gr.breadthFirstSearch(a[0]));
+console.log(gr.topoLogicalSort(a[0]));
