@@ -18,4 +18,4 @@ e.forEach(ed => {
 console.log(gr.depthFirstSearch(a[0]));
 console.log(gr.breadthFirstSearch(a[0]));
 console.log(gr.topoLogicalSort(a[0]));
-console.log(gr.stronglyConnnectComponents());
+console.log(gr.stronglyConnnectComponents().map(e => Array.from(e).map(ed => ed.data)));

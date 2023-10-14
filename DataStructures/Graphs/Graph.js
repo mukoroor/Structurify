@@ -187,8 +187,8 @@ export default class Graph {
             let topSort = reversedGraph.topoLogicalSort(source).sort((a, b) => b.prePost[1] - a.prePost[1])
             let connnected = new Set();
             let visited = new Set();
-            while (sort.length != 0) {
-                let cyc = this.depthFirstSearch(sort.shift().node, visited);
+            while (topSort.length != 0) {
+                let cyc = this.depthFirstSearch(topSort.shift().node, visited);
                 cyc.forEach(e => {
                     connnected.add(e[0]);
                 });
