@@ -1,0 +1,23 @@
+body {
+    margin: 0;
+    height: 100vh;
+}
+
+.manipulator {
+    display: grid;
+    grid-template-rows: 20vh 80vh;
+    height: 100%;
+}
+
+.manipulator section {
+    justify-self: center;
+    background-color: red;
+}
+
+.manipulator .renderer {
+    position: relative;
+    height: 100%;
+    border: 1px rebeccapurple solid;
+    width: 100%;
+    /* background-color: blue; */
+}

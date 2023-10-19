@@ -31,8 +31,10 @@ export default class Graph {
      * 
      * @param {*} newNode 
      */
-    addNode(newNode) {
-        if (newNode instanceof GraphNode) this.#nodes.add(newNode);
+    addNode(data) {
+        const newNode = new GraphNode(data);
+        this.#nodes.add(newNode);
+        return newNode;
     }
 
     removeNode(node) {
@@ -75,12 +77,13 @@ export default class Graph {
                 this.#degreeStore.set(begin, this.#degreeStore.has(begin) ? (this.#degreeStore.get(begin) || 0) + 1 : 1);
             }
         }
+        return e;
     }
 
     reverse() {
         const reversedGraph = new Graph();
         for (const node of this.#nodes) {
-            reversedGraph.addNode(node);
+            reversedGraph.nodes.add(node);
         }
         for (const edge of this.#edges) {
             reversedGraph.addEdge(edge.endTerminal, edge.beginTerminal, edge.weight);
@@ -90,6 +93,10 @@ export default class Graph {
 
     get nodes() {
         return this.#nodes;
+    }
+
+    get edges() {
+        return this.#edges;
     }
 
     /**
